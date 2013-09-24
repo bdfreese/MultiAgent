@@ -172,10 +172,10 @@ class MinimaxAgent(MultiAgentSearchAgent):
         
 
         def minimaxDispatch(self, gameState, currentDepth, currentAgentIndex):
-          if ((currentDepth == (self.depth)) and (currentAgentIndex == 0)):
+          if (currentDepth == (self.depth) or (gameState.isWin() or gameState.isLose())):
             return self.evaluationFunction(gameState)
           elif (currentAgentIndex == (gameState.getNumAgents() -1 )):
-            return maxLayer(self, gameState, currentDepth+1, ((currentAgentIndex + 1)%gameState.getNumAgents()))
+            return maxLayer(self, gameState, currentDepth, ((currentAgentIndex + 1)%gameState.getNumAgents()))
           else:
             return minLayer(self, gameState, currentDepth , ((currentAgentIndex + 1)%gameState.getNumAgents()))
         def maxLayer(self, gameState, currentDepth, currentAgentIndex):
@@ -189,27 +189,30 @@ class MinimaxAgent(MultiAgentSearchAgent):
         def minLayer(self, gameState, currentDepth, currentAgentIndex):
           minV = sys.maxint
           possibleActionsMin = gameState.getLegalActions(currentAgentIndex)
-          
+          if (currentAgentIndex == (gameState.getNumAgents()-1)):
+            newDepth = currentDepth+1
+          else:
+            newDepth = currentDepth
           for possibleAction in possibleActionsMin:
             possibleSuccessor = gameState.generateSuccessor(currentAgentIndex, possibleAction)
             
-            minV = min(minV, minimaxDispatch(self, possibleSuccessor, currentDepth, currentAgentIndex))
+            minV = min(minV, minimaxDispatch(self, possibleSuccessor, newDepth, currentAgentIndex))
           return minV
 
 
         legalMoves = gameState.getLegalActions(0)
-        scores = [minimaxDispatch(self, gameState.generateSuccessor(0, move),-1, (gameState.getNumAgents()-1)) for move in legalMoves]
-        minScore = min(scores)
+        
+        scores = []
+        bestScore = -sys.maxint -1
+        for move in legalMoves:
+          score = minimaxDispatch(self, gameState.generateSuccessor(0, move),0,0)
+          if (score >= bestScore):
+            bestScore = score
+            bestMove = move
+      
 
-        maxScore = max(scores)
 
-        bestIndices = [index for index in range(len(scores)) if scores[index] == maxScore]
-        chosenIndex = random.choice(bestIndices) # Pick randomly among the best
-
-        newAction = legalMoves[chosenIndex]
-
-
-        return newAction
+        return bestMove
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
