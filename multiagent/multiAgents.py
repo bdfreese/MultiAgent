@@ -223,8 +223,48 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def alphaBetaDispatch(self, gameState, currentDepth, currentAgentIndex, alpha, beta):
+          if (currentDepth == (self.depth) or (gameState.isWin() or gameState.isLose())):
+            return self.evaluationFunction(gameState)
+          elif (currentAgentIndex == (gameState.getNumAgents() -1 )):
+            return maxLayer(self, gameState, currentDepth, ((currentAgentIndex + 1)%gameState.getNumAgents()))
+          else:
+            return minLayer(self, gameState, currentDepth , ((currentAgentIndex + 1)%gameState.getNumAgents()))
+        def maxLayer(self, gameState, currentDepth, currentAgentIndex):
+          maxV = -sys.maxint - 1
+          possibleActions = gameState.getLegalActions(currentAgentIndex)
+          for possibleAction in possibleActions:
+            possibleSuccessor = gameState.generateSuccessor(currentAgentIndex, possibleAction)
+            maxV = max(maxV, alphaBetaDispatch(self, possibleSuccessor, currentDepth, currentAgentIndex))
+          return maxV
+          
+        def minLayer(self, gameState, currentDepth, currentAgentIndex):
+          minV = sys.maxint
+          possibleActionsMin = gameState.getLegalActions(currentAgentIndex)
+          if (currentAgentIndex == (gameState.getNumAgents()-1)):
+            newDepth = currentDepth+1
+          else:
+            newDepth = currentDepth
+          for possibleAction in possibleActionsMin:
+            possibleSuccessor = gameState.generateSuccessor(currentAgentIndex, possibleAction)
+            
+            minV = min(minV, alphaBetaDispatch(self, possibleSuccessor, newDepth, currentAgentIndex))
+          return minV
+
+
+        legalMoves = gameState.getLegalActions(0)
+        
+        scores = []
+        bestScore = -sys.maxint -1
+        for move in legalMoves:
+          score = alphaBetaDispatch(self, gameState.generateSuccessor(0, move),0,0)
+          if (score >= bestScore):
+            bestScore = score
+            bestMove = move
+      
+
+
+        return bestMove
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
