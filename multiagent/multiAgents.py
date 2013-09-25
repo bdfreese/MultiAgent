@@ -227,18 +227,21 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           if (currentDepth == (self.depth) or (gameState.isWin() or gameState.isLose())):
             return self.evaluationFunction(gameState)
           elif (currentAgentIndex == (gameState.getNumAgents() -1 )):
-            return maxLayer(self, gameState, currentDepth, ((currentAgentIndex + 1)%gameState.getNumAgents()))
+            return maxLayer(self, gameState, currentDepth, ((currentAgentIndex + 1)%gameState.getNumAgents()), alpha, beta)
           else:
-            return minLayer(self, gameState, currentDepth , ((currentAgentIndex + 1)%gameState.getNumAgents()))
-        def maxLayer(self, gameState, currentDepth, currentAgentIndex):
+            return minLayer(self, gameState, currentDepth , ((currentAgentIndex + 1)%gameState.getNumAgents()), alpha, beta)
+        def maxLayer(self, gameState, currentDepth, currentAgentIndex, alpha, beta):
           maxV = -sys.maxint - 1
           possibleActions = gameState.getLegalActions(currentAgentIndex)
           for possibleAction in possibleActions:
             possibleSuccessor = gameState.generateSuccessor(currentAgentIndex, possibleAction)
-            maxV = max(maxV, alphaBetaDispatch(self, possibleSuccessor, currentDepth, currentAgentIndex))
+            maxV = max(maxV, alphaBetaDispatch(self, possibleSuccessor, currentDepth, currentAgentIndex, alpha, beta))
+            if (maxV > beta):
+              return maxV
+            alpha = max(maxV, alpha)
           return maxV
           
-        def minLayer(self, gameState, currentDepth, currentAgentIndex):
+        def minLayer(self, gameState, currentDepth, currentAgentIndex, alpha, beta):
           minV = sys.maxint
           possibleActionsMin = gameState.getLegalActions(currentAgentIndex)
           if (currentAgentIndex == (gameState.getNumAgents()-1)):
@@ -248,19 +251,28 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           for possibleAction in possibleActionsMin:
             possibleSuccessor = gameState.generateSuccessor(currentAgentIndex, possibleAction)
             
-            minV = min(minV, alphaBetaDispatch(self, possibleSuccessor, newDepth, currentAgentIndex))
+            minV = min(minV, alphaBetaDispatch(self, possibleSuccessor, newDepth, currentAgentIndex, alpha, beta))
+            if (minV < alpha):
+              return minV
+            beta = min(minV, beta)
           return minV
 
 
         legalMoves = gameState.getLegalActions(0)
         
         scores = []
-        bestScore = -sys.maxint -1
+
+        firstAlpha = - sys.maxint - 1
+        firstBeta = sys.maxint
+        bestScore = - sys.maxint - 1
         for move in legalMoves:
-          score = alphaBetaDispatch(self, gameState.generateSuccessor(0, move),0,0)
+          score = alphaBetaDispatch(self, gameState.generateSuccessor(0, move),0,0, firstAlpha, firstBeta)
           if (score >= bestScore):
             bestScore = score
             bestMove = move
+          if (bestScore > firstBeta):
+            return bestMove
+          firstAlpha = max(bestScore, firstAlpha)
       
 
 
