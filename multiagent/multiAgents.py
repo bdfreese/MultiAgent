@@ -290,8 +290,52 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def expectimaxDispatch(self, gameState, currentDepth, currentAgentIndex):
+          if (currentDepth == (self.depth) or (gameState.isWin() or gameState.isLose())):
+            return self.evaluationFunction(gameState)
+          elif (currentAgentIndex == (gameState.getNumAgents() -1 )):
+            return maxLayer(self, gameState, currentDepth, ((currentAgentIndex + 1)%gameState.getNumAgents()))
+          else:
+            return expectLayer(self, gameState, currentDepth , ((currentAgentIndex + 1)%gameState.getNumAgents()))
+        def maxLayer(self, gameState, currentDepth, currentAgentIndex):
+          maxV = -sys.maxint - 1
+          possibleActions = gameState.getLegalActions(currentAgentIndex)
+          for possibleAction in possibleActions:
+            possibleSuccessor = gameState.generateSuccessor(currentAgentIndex, possibleAction)
+            maxV = max(maxV, expectimaxDispatch(self, possibleSuccessor, currentDepth, currentAgentIndex))
+          return maxV
+          
+        def expectLayer(self, gameState, currentDepth, currentAgentIndex):
+          expectV = 0
+          possibleActionsMin = gameState.getLegalActions(currentAgentIndex)
+          totalMoves = len(possibleActionsMin)
+          totalMoves = float(totalMoves)
+
+          moveProb = 1/totalMoves
+          if (currentAgentIndex == (gameState.getNumAgents()-1)):
+            newDepth = currentDepth+1
+          else:
+            newDepth = currentDepth
+          for possibleAction in possibleActionsMin:
+            possibleSuccessor = gameState.generateSuccessor(currentAgentIndex, possibleAction)
+            
+            expectV += moveProb*expectimaxDispatch(self, possibleSuccessor, newDepth, currentAgentIndex)
+          return expectV
+
+
+        legalMoves = gameState.getLegalActions(0)
+        
+        scores = []
+        bestScore = -sys.maxint -1
+        for move in legalMoves:
+          score = expectimaxDispatch(self, gameState.generateSuccessor(0, move),0,0)
+          if (score >= bestScore):
+            bestScore = score
+            bestMove = move
+      
+
+
+        return bestMove
 
 def betterEvaluationFunction(currentGameState):
     """
