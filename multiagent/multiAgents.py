@@ -308,7 +308,6 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
         legalMoves = gameState.getLegalActions(0)
         
-        scores = []
         bestScore = -sys.maxint -1
         for move in legalMoves:
           score = expectimaxDispatch(self, gameState.generateSuccessor(0, move),0,0)
@@ -325,10 +324,55 @@ def betterEvaluationFunction(currentGameState):
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION: 
+      First we check if the currentGameState is a win or loose state. 
+      If loose, we say 'ah hell no', if win, we say 'ah hell yes'
+      If it is not a win or loose state we set some initial values, and begin scoring.
+      We get the currentScore, factor in a scaled minimum distance to food, accounting for if he is too close to a ghost.
+      We factor in a scaled minimum distance to ghost.
+      Finally, we make him agressive if the ghosts are scared, and return a score.
+
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+
+    if currentGameState.isLose():
+        return -sys.maxint
+    elif currentGameState.isWin():
+        return sys.maxint
+    else:
+        newScore = currentGameState.getScore()
+        minDistanceToGhost = min([manhattanDistance(currentGameState.getPacmanPosition(), ghostPosition) for ghostPosition in currentGameState.getGhostPositions()])
+        minDistanceToGhostScaled = 1 / minDistanceToGhost
+        minDistanceToFood = min([manhattanDistance(currentGameState.getPacmanPosition(), position) for position in currentGameState.getFood().asList()])
+        minDistanceToFoodScaled = 1 / minDistanceToFood
+        
+        newScore += (minDistanceToFoodScaled + minDistanceToGhostScaled * -12) if minDistanceToGhost < 5 else (minDistanceToFoodScaled + minDistanceToGhostScaled * -6)
+
+        ghostScaredTime = list([state.scaredTimer for state in currentGameState.getGhostStates()])[0]
+
+        newScore += minDistanceToGhostScaled * ghostScaredTime
+        if ghostScaredTime is not 0:
+            newScore += minDistanceToGhostScaled * 10
+
+        return newScore
+
+# Abbreviation
+better = betterEvaluationFunction
+
+class ContestAgent(MultiAgentSearchAgent):
+    """
+      Your agent for the mini-contest
+    """
+    def getAction(self, gameState):
+        """
+          Returns the expectimax action using self.depth and self.evaluationFunction
+
+          All ghosts should be modeled as choosing uniformly at random from their
+          legal moves.
+        """
+        "*** YOUR CODE HERE ***"
+        util.raiseNotDefined()
 
 # Abbreviation
 better = betterEvaluationFunction
