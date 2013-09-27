@@ -71,47 +71,30 @@ class ReflexAgent(Agent):
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
-        oldFood = currentGameState.getFood()
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
-        newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
-        newGhostPos = [ghostState.getPosition() for ghostState in newGhostStates]
-        oldScore = currentGameState.getScore()
         newScore = successorGameState.getScore()
         newFoodList = successorGameState.getFood().asList()
+        nearestGhost = nearestFood = -sys.maxint
+        scaleFactor = 70
+
+        for food in newFoodList:
+          if nearestFood <= 0:
+              nearestFood = manhattanDistance(newPos, food)
+          else:
+              nearestFood = min(manhattanDistance(newPos, food), nearestFood)
+
+        for ghost in newGhostStates:
+          if nearestGhost <= 0:
+              nearestGhost = manhattanDistance(newPos, ghost.getPosition())
+          else:
+              nearestGhost = min(nearestGhost, manhattanDistance(newPos, nearestFood))
 
 
-
-        newStateEval = 0
-        for candy in newFoodList:
-          if (util.manhattanDistance(candy, newPos) <= 5):
-            newStateEval += 7
-
-          if ((action == 'North') and (candy[0] == newPos[0]) and (candy[1] > newPos[1])):
-             newStateEval += (85 - (candy[1]-newPos[1]))
-          if ((action == 'South') and (candy[0] == newPos[0]) and (candy[1] < newPos[1])):
-             newStateEval += (85 - (newPos[1]-candy[1]))
-          if ((action == 'East') and (candy[0] > newPos[0]) and (candy[1] == newPos[1])):
-             newStateEval += (85 - (candy[0] - newPos[0]))
-          if ((action == 'West') and (candy[0] < newPos[0]) and (candy[1] == newPos[1])):
-             newStateEval += (85 - (newPos[0]-candy[0]))
-        if (newScore > oldScore):
-          newStateEval += 350
-        if (newFood < oldFood):
-          newStateEval += 300
-
-        for ghost in newGhostPos:
-
-          if (ghost == newPos):
-            newStateEval -= 500
-          elif (util.manhattanDistance(ghost, newPos) <= 6):
-            newStateEval -= 10
-          elif (util.manhattanDistance(ghost, newPos) <= 3):
-            newStateEval -= 75
-          elif (util.manhattanDistance(ghost, newPos) <= 1):
-            newStateEval -= 250
-        "*** YOUR CODE HERE ***"
-        'print newStateEval'
+        newStateEval = scaleFactor / 1+len(newFood.asList())
+        newStateEval += scaleFactor * newScore
+        newStateEval += scaleFactor / nearestFood
+        newStateEval += nearestGhost
         return newStateEval
 
 def scoreEvaluationFunction(currentGameState):
